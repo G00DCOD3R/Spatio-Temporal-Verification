@@ -52,13 +52,16 @@ To run the test suite:
 poetry run pytest
 ```
 
+## Datasets
+All the datasets used for the experiments are either publicly available or can be downloaded from the [Zenodo](https://zenodo.org/records/15426146) repository.
+
 ## Verification Methods
 
 The project implements several verification methods:
 
 1. Interval Bound Propagation (IBP)
-2. Mixed Integer Linear Programming (MILP)
-3. MILP with Patch Verification
+2. Spatio-Temporal Bound Propagation (STBP)
+3. Spatio-Temporal Bound Propagation with Patch Verification
 
 Each verifier is implemented as a separate class in the `verifiers` directory.
 
@@ -172,6 +175,8 @@ For patch-based verification (MILP-IBP-Patch), you need to provide bounding box 
 ##### Dataset
 
 The Udacity steering angle dataset should be organized as follows:
+The dataset is available to download from the [Zenodo](https://zenodo.org/records/15426146) repository.
+
 
 ```
 udacity_dataset/
