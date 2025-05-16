@@ -1,0 +1,641 @@
+/Users/sherwin/miniforge3/envs/tnesy/lib/python3.11/site-packages/onnxscript/converter.py:820: FutureWarning: 'onnxscript.values.Op.param_schemas' is deprecated in version 0.1 and will be removed in the future. Please use '.op_signature' instead.
+  param_schemas = callee.param_schemas()
+/Users/sherwin/miniforge3/envs/tnesy/lib/python3.11/site-packages/onnxscript/converter.py:820: FutureWarning: 'onnxscript.values.OnnxFunction.param_schemas' is deprecated in version 0.1 and will be removed in the future. Please use '.op_signature' instead.
+  param_schemas = callee.param_schemas()
+Start time:  2025-05-15 14:44:25
+Using device: cpu
+Loading best model...
+
+Verifying robustness...
+
+Verifying robustness on 1000 test samples...
+Total verifications to perform: 1000
+  0%|          | 0/2000 [00:00<?, ?it/s]
+  2%|▏         | 32/2000 [00:00<00:19, 98.61it/s]
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.008s/sample ETA: 2025-05-15 14:44:45
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+  2%|▏         | 32/2000 [00:20<00:19, 98.61it/s]  3%|▎         | 64/2000 [00:54<32:02,  1.01it/s]
+  5%|▍         | 96/2000 [01:48<41:31,  1.31s/it]
+  6%|▋         | 128/2000 [01:48<24:48,  1.26it/s]ε=0.0100: Acc=0.00% Time=1.681s/sample ETA: 2025-05-15 15:40:47
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.684s/sample ETA: 2025-05-15 16:36:55
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 15:40:49
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+  6%|▋         | 128/2000 [02:00<24:48,  1.26it/s]  8%|▊         | 160/2000 [02:43<34:41,  1.13s/it]
+ 10%|▉         | 192/2000 [03:37<39:41,  1.32s/it]
+ 11%|█         | 224/2000 [03:37<26:19,  1.12it/s]ε=0.0100: Acc=0.00% Time=1.727s/sample ETA: 2025-05-15 16:09:35
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.679s/sample ETA: 2025-05-15 16:37:35
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.006s/sample ETA: 2025-05-15 15:59:56
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 11%|█         | 224/2000 [03:50<26:19,  1.12it/s] 13%|█▎        | 256/2000 [04:32<33:23,  1.15s/it]
+ 14%|█▍        | 288/2000 [05:25<37:28,  1.31s/it]
+ 16%|█▌        | 320/2000 [05:25<25:29,  1.10it/s]ε=0.0100: Acc=0.00% Time=1.704s/sample ETA: 2025-05-15 16:18:52
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.676s/sample ETA: 2025-05-15 16:37:30
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:09:17
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 16%|█▌        | 320/2000 [05:40<25:29,  1.10it/s] 18%|█▊        | 352/2000 [06:21<31:52,  1.16s/it]
+ 19%|█▉        | 384/2000 [07:14<35:31,  1.32s/it]
+ 21%|██        | 416/2000 [07:15<24:20,  1.08it/s]ε=0.0100: Acc=0.00% Time=1.727s/sample ETA: 2025-05-15 16:23:40
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.682s/sample ETA: 2025-05-15 16:37:41
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:15:06
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 21%|██        | 416/2000 [07:30<24:20,  1.08it/s] 22%|██▏       | 448/2000 [08:11<30:21,  1.17s/it]
+ 24%|██▍       | 480/2000 [09:08<34:22,  1.36s/it]
+ 26%|██▌       | 512/2000 [09:08<23:34,  1.05it/s]ε=0.0100: Acc=0.00% Time=1.755s/sample ETA: 2025-05-15 16:26:48
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.782s/sample ETA: 2025-05-15 16:38:40
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:19:40
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 26%|██▌       | 512/2000 [09:20<23:34,  1.05it/s] 27%|██▋       | 544/2000 [10:04<28:51,  1.19s/it]
+ 29%|██▉       | 576/2000 [10:57<31:38,  1.33s/it]
+ 30%|███       | 608/2000 [10:58<21:41,  1.07it/s]ε=0.0100: Acc=0.00% Time=1.745s/sample ETA: 2025-05-15 16:29:22
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.667s/sample ETA: 2025-05-15 16:38:37
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.006s/sample ETA: 2025-05-15 16:22:20
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 30%|███       | 608/2000 [11:10<21:41,  1.07it/s] 32%|███▏      | 640/2000 [11:53<26:36,  1.17s/it]
+ 34%|███▎      | 672/2000 [12:47<29:18,  1.32s/it]
+ 35%|███▌      | 704/2000 [12:47<20:03,  1.08it/s]ε=0.0100: Acc=0.00% Time=1.732s/sample ETA: 2025-05-15 16:30:36
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.673s/sample ETA: 2025-05-15 16:38:33
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:24:20
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 35%|███▌      | 704/2000 [13:00<20:03,  1.08it/s] 37%|███▋      | 736/2000 [13:43<24:52,  1.18s/it]
+ 38%|███▊      | 768/2000 [14:40<27:54,  1.36s/it]
+ 40%|████      | 800/2000 [14:40<19:05,  1.05it/s]ε=0.0100: Acc=0.00% Time=1.767s/sample ETA: 2025-05-15 16:31:41
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.776s/sample ETA: 2025-05-15 16:39:05
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.008s/sample ETA: 2025-05-15 16:26:22
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 40%|████      | 800/2000 [15:00<19:05,  1.05it/s] 42%|████▏     | 832/2000 [15:38<23:35,  1.21s/it]
+ 43%|████▎     | 864/2000 [16:33<25:44,  1.36s/it]
+ 45%|████▍     | 896/2000 [16:33<17:33,  1.05it/s]ε=0.0100: Acc=0.00% Time=1.813s/sample ETA: 2025-05-15 16:33:05
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.704s/sample ETA: 2025-05-15 16:39:24
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:27:56
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 45%|████▍     | 896/2000 [16:50<17:33,  1.05it/s] 46%|████▋     | 928/2000 [17:29<21:15,  1.19s/it]
+ 48%|████▊     | 960/2000 [18:24<23:27,  1.35s/it]
+ 50%|████▉     | 992/2000 [18:25<15:57,  1.05it/s]ε=0.0100: Acc=0.00% Time=1.741s/sample ETA: 2025-05-15 16:33:44
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.733s/sample ETA: 2025-05-15 16:39:30
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.010s/sample ETA: 2025-05-15 16:29:05
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 50%|████▉     | 992/2000 [18:40<15:57,  1.05it/s] 51%|█████     | 1024/2000 [19:22<19:28,  1.20s/it]
+ 53%|█████▎    | 1056/2000 [20:17<21:20,  1.36s/it]
+ 54%|█████▍    | 1088/2000 [20:17<14:28,  1.05it/s]ε=0.0100: Acc=0.00% Time=1.774s/sample ETA: 2025-05-15 16:34:27
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.726s/sample ETA: 2025-05-15 16:39:42
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.006s/sample ETA: 2025-05-15 16:30:06
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 54%|█████▍    | 1088/2000 [20:30<14:28,  1.05it/s] 56%|█████▌    | 1120/2000 [21:12<17:17,  1.18s/it]
+ 58%|█████▊    | 1152/2000 [22:06<18:48,  1.33s/it]
+ 59%|█████▉    | 1184/2000 [22:06<12:42,  1.07it/s]ε=0.0100: Acc=0.00% Time=1.709s/sample ETA: 2025-05-15 16:34:52
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.686s/sample ETA: 2025-05-15 16:39:33
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.009s/sample ETA: 2025-05-15 16:30:43
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 59%|█████▉    | 1184/2000 [22:20<12:42,  1.07it/s] 61%|██████    | 1216/2000 [23:03<15:30,  1.19s/it]
+ 62%|██████▏   | 1248/2000 [23:57<16:46,  1.34s/it]
+ 64%|██████▍   | 1280/2000 [23:57<11:16,  1.06it/s]ε=0.0100: Acc=0.00% Time=1.775s/sample ETA: 2025-05-15 16:35:16
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.691s/sample ETA: 2025-05-15 16:39:36
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:31:23
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 64%|██████▍   | 1280/2000 [24:10<11:16,  1.06it/s] 66%|██████▌   | 1312/2000 [24:52<13:22,  1.17s/it]
+ 67%|██████▋   | 1344/2000 [25:45<14:24,  1.32s/it]
+ 69%|██████▉   | 1376/2000 [25:45<09:37,  1.08it/s]ε=0.0100: Acc=0.00% Time=1.697s/sample ETA: 2025-05-15 16:35:25
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.671s/sample ETA: 2025-05-15 16:39:24
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.006s/sample ETA: 2025-05-15 16:31:45
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 69%|██████▉   | 1376/2000 [26:00<09:37,  1.08it/s] 70%|███████   | 1408/2000 [26:40<11:24,  1.16s/it]
+ 72%|███████▏  | 1440/2000 [27:34<12:21,  1.32s/it]
+ 74%|███████▎  | 1472/2000 [27:35<08:10,  1.08it/s]ε=0.0100: Acc=0.00% Time=1.696s/sample ETA: 2025-05-15 16:35:31
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.713s/sample ETA: 2025-05-15 16:39:20
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.008s/sample ETA: 2025-05-15 16:32:10
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 74%|███████▎  | 1472/2000 [27:50<08:10,  1.08it/s] 75%|███████▌  | 1504/2000 [28:30<09:39,  1.17s/it]
+ 77%|███████▋  | 1536/2000 [29:25<10:20,  1.34s/it]
+ 78%|███████▊  | 1568/2000 [29:26<06:45,  1.07it/s]ε=0.0100: Acc=0.00% Time=1.724s/sample ETA: 2025-05-15 16:35:46
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.733s/sample ETA: 2025-05-15 16:39:22
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:32:37
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 78%|███████▊  | 1568/2000 [29:40<06:45,  1.07it/s] 80%|████████  | 1600/2000 [30:21<07:50,  1.18s/it]
+ 82%|████████▏ | 1632/2000 [31:16<08:13,  1.34s/it]
+ 83%|████████▎ | 1664/2000 [31:16<05:16,  1.06it/s]ε=0.0100: Acc=0.00% Time=1.733s/sample ETA: 2025-05-15 16:36:01
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.725s/sample ETA: 2025-05-15 16:39:24
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:33:02
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 83%|████████▎ | 1664/2000 [31:30<05:16,  1.06it/s] 85%|████████▍ | 1696/2000 [32:12<05:59,  1.18s/it]
+ 86%|████████▋ | 1728/2000 [33:08<06:06,  1.35s/it]
+ 88%|████████▊ | 1760/2000 [33:08<03:47,  1.06it/s]ε=0.0100: Acc=0.00% Time=1.742s/sample ETA: 2025-05-15 16:36:15
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.736s/sample ETA: 2025-05-15 16:39:28
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:33:26
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 88%|████████▊ | 1760/2000 [33:21<03:47,  1.06it/s] 90%|████████▉ | 1792/2000 [34:03<04:05,  1.18s/it]
+ 91%|█████████ | 1824/2000 [34:57<03:54,  1.33s/it]
+ 93%|█████████▎| 1856/2000 [34:58<02:14,  1.07it/s]ε=0.0100: Acc=0.00% Time=1.734s/sample ETA: 2025-05-15 16:36:28
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.685s/sample ETA: 2025-05-15 16:39:25
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:33:41
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 93%|█████████▎| 1856/2000 [35:11<02:14,  1.07it/s] 94%|█████████▍| 1888/2000 [35:53<02:11,  1.17s/it]
+ 96%|█████████▌| 1920/2000 [36:47<01:46,  1.33s/it]
+ 98%|█████████▊| 1952/2000 [36:47<00:44,  1.07it/s]ε=0.0100: Acc=0.00% Time=1.718s/sample ETA: 2025-05-15 16:36:33
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.691s/sample ETA: 2025-05-15 16:39:22
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:33:55
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+ 98%|█████████▊| 1952/2000 [37:01<00:44,  1.07it/s] 99%|█████████▉| 1984/2000 [37:44<00:18,  1.18s/it]
+2016it [38:39,  1.35s/it]                          
+2048it [38:40,  1.05it/s]ε=0.0100: Acc=0.00% Time=1.769s/sample ETA: 2025-05-15 16:36:43
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.746s/sample ETA: 2025-05-15 16:39:29
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:34:17
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+2048it [38:51,  1.05it/s]2080it [39:36,  1.19s/it]
+2112it [40:31,  1.35s/it]
+2144it [40:31,  1.06it/s]ε=0.0100: Acc=0.00% Time=1.762s/sample ETA: 2025-05-15 16:36:57
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.706s/sample ETA: 2025-05-15 16:39:31
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:34:32
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+2144it [40:51,  1.06it/s]2176it [41:26,  1.18s/it]
+2208it [42:21,  1.34s/it]
+2240it [42:21,  1.07it/s]ε=0.0100: Acc=0.00% Time=1.725s/sample ETA: 2025-05-15 16:37:02
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.707s/sample ETA: 2025-05-15 16:39:31
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:34:44
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+2240it [42:41,  1.07it/s]2272it [43:17,  1.18s/it]
+2304it [44:10,  1.32s/it]
+2336it [44:10,  1.08it/s]ε=0.0100: Acc=0.00% Time=1.732s/sample ETA: 2025-05-15 16:37:07
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.670s/sample ETA: 2025-05-15 16:39:27
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:34:51
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+2336it [44:21,  1.08it/s]2368it [45:06,  1.17s/it]
+2400it [46:01,  1.34s/it]
+2432it [46:02,  1.06it/s]ε=0.0100: Acc=0.00% Time=1.736s/sample ETA: 2025-05-15 16:37:11
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.737s/sample ETA: 2025-05-15 16:39:29
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:35:04
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+2432it [46:21,  1.06it/s]2464it [46:58,  1.18s/it]
+2496it [47:53,  1.35s/it]
+2528it [47:53,  1.06it/s]ε=0.0100: Acc=0.00% Time=1.748s/sample ETA: 2025-05-15 16:37:19
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.734s/sample ETA: 2025-05-15 16:39:32
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:35:17
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+2528it [48:11,  1.06it/s]2560it [48:48,  1.18s/it]
+2592it [49:44,  1.35s/it]
+2624it [49:44,  1.06it/s]ε=0.0100: Acc=0.00% Time=1.714s/sample ETA: 2025-05-15 16:37:24
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.750s/sample ETA: 2025-05-15 16:39:34
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:35:27
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+2624it [50:01,  1.06it/s]2656it [50:40,  1.19s/it]
+2688it [51:34,  1.34s/it]
+2720it [51:35,  1.07it/s]ε=0.0100: Acc=0.00% Time=1.748s/sample ETA: 2025-05-15 16:37:32
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.685s/sample ETA: 2025-05-15 16:39:33
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:35:35
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+2720it [51:51,  1.07it/s]2752it [52:30,  1.18s/it]
+2784it [53:24,  1.33s/it]
+2816it [53:25,  1.07it/s]ε=0.0100: Acc=0.00% Time=1.730s/sample ETA: 2025-05-15 16:37:35
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.703s/sample ETA: 2025-05-15 16:39:32
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.007s/sample ETA: 2025-05-15 16:35:42
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+2816it [53:41,  1.07it/s]2848it [54:20,  1.18s/it]
+2880it [55:15,  1.33s/it]
+2912it [55:15,  1.07it/s]ε=0.0100: Acc=0.00% Time=1.739s/sample ETA: 2025-05-15 16:37:38
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.703s/sample ETA: 2025-05-15 16:39:32
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.008s/sample ETA: 2025-05-15 16:35:50
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+2912it [55:31,  1.07it/s]2944it [56:11,  1.18s/it]
+2976it [57:06,  1.34s/it]ε=0.0100: Acc=0.00% Time=1.761s/sample ETA: 2025-05-15 16:37:43
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.718s/sample ETA: 2025-05-15 16:39:34
+
+Verifying group: individual frames
+
+Running pure IBP verification...
+
+IBP Verification with epsilon=0.01
+ε=0.01: Acc=0.00% Time=0.008s/sample ETA: 2025-05-15 22:10:37
+
+Running hybrid MILP-IBP verification...
+
+MILP-IBP Verification with epsilon=0.01
+2992it [57:20,  1.26s/it]
+3000it [57:34,  1.32s/it]
+3000it [57:34,  1.15s/it]
+ε=0.0100: Acc=0.00% Time=1.713s/sample ETA: 2025-05-15 22:12:25
+
+Running hybrid MILP-IBP Patch verification...
+
+MILP-IBP Patch Verification with epsilon=0.01
+ε=0.0100: Acc=0.00% Time=1.771s/sample ETA: 2025-05-15 22:14:15
+
+Verification Complete!
+Total time: 0.96 hours
+Samples verified: 1000
+
+Pure IBP Statistics:
+ε=0.01: Avg Time=0.223s Avg Acc=0.00%
+
+Hybrid MILP-IBP Statistics:
+ε=0.01: Avg Time=54.286s Avg Acc=0.00%
+
+Hybrid MILP-IBP Patch Statistics:
+ε=0.01: Avg Time=53.414s Avg Acc=0.00%
+
+Average time per verification: 13.50 seconds
+
+Extrapolated Time for Full Test Set:
+Estimated time for all test sequences: 1.0 hours
+Verification throughput: 1042.0 samples/hour
+End time:  2025-05-15 15:42:00

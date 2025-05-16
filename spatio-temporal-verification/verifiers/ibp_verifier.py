@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from models.resnet18 import VideoResNet
 from models.simple3dcnn import Simple3DCNN
+from experiments.udacity_steering_angle.models.udacity_3dcnn import UdacitySteeringAngle_3DCNN, CNN3D
 
 from .base_verifier import BaseVerifier
 
@@ -311,64 +312,245 @@ class IBPVerifier(BaseVerifier):
 
         return lower_bounds, upper_bounds
 
-
     def verify_sequence(
+        self, x: torch.Tensor, y: torch.Tensor, frame_group: List[List[int]], epsilon: float
+    ) -> Dict[float, float]:
+        """Verify robustness of a sequence of frames using Interval Bound Propagation (IBP)"""
+        # Get lower and upper bounds for the input
+        lower, upper = self._compute_bounds(x, epsilon, frame_group)
+
+        if isinstance(self.model, Simple3DCNN):
+            # Propagate bounds through Simple3DCNN
+            output_lower, output_upper = self._ibp_propagate_bounds_simple3dcnn(
+                x, lower, upper
+            )
+        elif isinstance(self.model, VideoResNet):
+            # Propagate bounds through VideoResNet
+            output_lower, output_upper = self._ibp_propagate_bounds_resnet18(
+                x, lower, upper
+            )
+        elif isinstance(self.model, UdacitySteeringAngle_3DCNN) or isinstance(self.model.cnn3d, CNN3D):
+            # Propagate bounds through UdacitySteeringAngle_3DCNN
+            output_lower, output_upper = self._ibp_propagate_bounds_udacity_cnn3d(
+                x, lower, upper
+            )
+        else:
+            raise ValueError(f"Unsupported model type: {type(self.model)}")
+
+        # Compute robustness
+        batch_size = x.size(0)
+        robust_count = 0
+
+        for i in range(batch_size):
+            # Get the true class label
+            true_class = y[i].item()
+
+            # Get the lower bound for the true class
+            lb_true_class = output_lower[i, true_class].item()
+
+            # Check if the lower bound of the true class is greater than the upper bound of all other classes
+            robust = True
+            for j in range(output_upper.size(1)):
+                if j != true_class and output_upper[i, j] >= lb_true_class:
+                    robust = False
+                    break
+
+            if robust:
+                robust_count += 1
+
+        results = {epsilon: robust_count / batch_size}
+        return results
+
+    def _ibp_propagate_bounds_simple3dcnn(
         self,
         x: torch.Tensor,
-        y: torch.Tensor,
-        frame_group: List[List[int]],
-        epsilon: float,
-    ) -> Dict[float, float]:
-        """
-        Verify robustness of the model for given frame groups and epsilon
+        lower: torch.Tensor,
+        upper: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Propagate bounds through a Simple3DCNN model"""
+        # Shorthand for model
+        model = self.model
 
-        Args:
-            x: Input tensor of shape (batch_size, channels, num_frames, height, width)
-            y: Ground truth labels
-            frame_group: List of lists containing frame indices to perturb together
-            epsilon: Perturbation size
+        # Propagate through conv1
+        lower = self._propagate_conv3d(lower, model.conv1)
+        upper = self._propagate_conv3d(upper, model.conv1)
 
-        Returns:
-            Dictionary containing verification results for each epsilon
-        """
-        results = {}
-        verified_correct = 0
-        total = x.size(0)
+        # Propagate through relu
+        lower, upper = self._propagate_relu(lower, upper)
 
-        print(f"\nIBP Verification with epsilon={epsilon}")
-        print(f"Input shape: {x.shape}")
-        print(f"Number of samples: {total}")
+        # Propagate through conv2
+        lower = self._propagate_conv3d(lower, model.conv2)
+        upper = self._propagate_conv3d(upper, model.conv2)
 
-        for i in range(total):
-            print(f"\nVerifying sample {i+1}/{total}")
-            input_tensor = x[i:i+1]
-            y_i = y[i:i+1]
+        # Propagate through relu
+        lower, upper = self._propagate_relu(lower, upper)
+
+        # Propagate through pool
+        lower = self._propagate_maxpool3d(lower, model.pool)
+        upper = self._propagate_maxpool3d(upper, model.pool)
+
+        # Flatten
+        lower = lower.view(lower.size(0), -1)
+        upper = upper.view(upper.size(0), -1)
+
+        # Propagate through fc1
+        lower = self._propagate_linear(lower, model.fc1)
+        upper = self._propagate_linear(upper, model.fc1)
+
+        # Propagate through relu
+        lower, upper = self._propagate_relu(lower, upper)
+
+        # Propagate through fc2
+        lower = self._propagate_linear(lower, model.fc2)
+        upper = self._propagate_linear(upper, model.fc2)
+
+        return lower, upper
+
+    def _ibp_propagate_bounds_resnet18(
+        self,
+        x: torch.Tensor,
+        lower: torch.Tensor,
+        upper: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Propagate bounds through a VideoResNet18 model"""
+        # TODO: Implement bound propagation for ResNet18
+        pass
+
+    def _ibp_propagate_bounds_udacity_cnn3d(
+        self,
+        input_tensor: torch.Tensor,
+        lower_input: torch.Tensor,
+        upper_input: torch.Tensor,
+        skip_first_conv: bool = False,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Propagate bounds through the UdacitySteeringAngle_3DCNN model"""
+        # Get the CNN3D model from UdacitySteeringAngle_3DCNN wrapper if needed
+        if isinstance(self.model, UdacitySteeringAngle_3DCNN):
+            model = self.model.cnn3d
+        else:
+            model = self.model
+
+        # Set initial bounds
+        lower_bounds = lower_input
+        upper_bounds = upper_input
+
+        # Verify model instance is a CNN3D or a subclass of it
+        assert isinstance(
+            model, CNN3D
+        ), f"Model is not an instance of CNN3D but {type(model).__name__}"
+
+        # Process convolutional layers
+        # Conv layer 1
+        if not skip_first_conv:
+            lower_bounds = self._propagate_conv3d(lower_bounds, model.conv1)
+            upper_bounds = self._propagate_conv3d(upper_bounds, model.conv1)
         
-            with torch.no_grad():
-                if isinstance(self.model, VideoResNet):
-                    lower_bounds, upper_bounds = self.propagate_bounds_resnet(
-                        input_tensor, epsilon=epsilon
-                    )
-                elif isinstance(self.model, Simple3DCNN):
-                    lower_bounds, upper_bounds = self.propagate_bounds_simple3dcnn(
-                        input_tensor, epsilon=epsilon
-                    )
+        lower_bounds = self._propagate_batchnorm3d(lower_bounds, model.bn1)
+        upper_bounds = self._propagate_batchnorm3d(upper_bounds, model.bn1)
+        lower_bounds, upper_bounds = self._propagate_relu(lower_bounds, upper_bounds)
+        
+        # Conv layer 2
+        lower_bounds = self._propagate_conv3d(lower_bounds, model.conv2)
+        upper_bounds = self._propagate_conv3d(upper_bounds, model.conv2)
+        lower_bounds = self._propagate_batchnorm3d(lower_bounds, model.bn2)
+        upper_bounds = self._propagate_batchnorm3d(upper_bounds, model.bn2)
+        lower_bounds, upper_bounds = self._propagate_relu(lower_bounds, upper_bounds)
+        
+        lower_bounds = self._propagate_adaptive_avg_pool3d(lower_bounds, (2, 2, 2))
+        upper_bounds = self._propagate_adaptive_avg_pool3d(upper_bounds, (2, 2, 2))
+        
+        # Flatten
+        if lower_bounds.ndim > 2:
+            lower_bounds = lower_bounds.view(lower_bounds.size(0), -1)
+            upper_bounds = upper_bounds.view(upper_bounds.size(0), -1)
             
-            # Print bound statistics
-            print(f"Lower bounds range: [{lower_bounds.min().item():.4f}, {lower_bounds.max().item():.4f}]")
-            print(f"Upper bounds range: [{upper_bounds.min().item():.4f}, {upper_bounds.max().item():.4f}]")
-            print(f"Bound width: {(upper_bounds - lower_bounds).mean().item():.4f}")
+        # FC layer 1
+        lower_bounds = self._propagate_linear(lower_bounds, model.fc1)
+        upper_bounds = self._propagate_linear(upper_bounds, model.fc1)
+        lower_bounds, upper_bounds = self._propagate_relu(lower_bounds, upper_bounds)
+        
+        # FC layer 2
+        lower_bounds = self._propagate_linear(lower_bounds, model.fc2)
+        upper_bounds = self._propagate_linear(upper_bounds, model.fc2)
+        lower_bounds, upper_bounds = self._propagate_relu(lower_bounds, upper_bounds)
+        
+        # FC layer 3
+        lower_bounds = self._propagate_linear(lower_bounds, model.fc3)
+        upper_bounds = self._propagate_linear(upper_bounds, model.fc3)
 
-            # Check robustness
-            margin = lower_bounds[0, y_i] - torch.max(
-                torch.cat([upper_bounds[0, :y_i], upper_bounds[0, y_i + 1 :]], dim=0)
-            )
+        return lower_bounds, upper_bounds
 
-            if margin.item() > 0:
-                verified_correct += 1
-                print(f"Sample {i+1} is robust (margin: {margin.item():.4f})")
-            else:
-                print(f"Sample {i+1} is not robust (margin: {margin.item():.4f})")
+    def _propagate_conv3d(
+        self, x: torch.Tensor, layer: nn.Conv3d
+    ) -> torch.Tensor:
+        """Propagate bounds through a 3D convolutional layer"""
+        weight = layer.weight
+        bias = layer.bias
+        stride = layer.stride
+        padding = layer.padding
+        dilation = layer.dilation
+        groups = layer.groups
 
-        results[epsilon] = verified_correct / total
-        return results
+        return F.conv3d(
+            x,
+            weight,
+            bias,
+            stride=stride,
+            padding=padding,
+            dilation=dilation,
+            groups=groups,
+        )
+
+    def _propagate_batchnorm3d(
+        self, x: torch.Tensor, layer: nn.BatchNorm3d
+    ) -> torch.Tensor:
+        """Propagate bounds through a 3D batch normalization layer"""
+        weight = layer.weight
+        bias = layer.bias
+        running_mean = layer.running_mean
+        running_var = layer.running_var
+        eps = layer.eps
+
+        # During inference, batch norm applies the following transformation:
+        # y = (x - running_mean) / sqrt(running_var + eps) * weight + bias
+        x_normalized = (x - running_mean.view(1, -1, 1, 1, 1)) / torch.sqrt(
+            running_var.view(1, -1, 1, 1, 1) + eps
+        )
+        return x_normalized * weight.view(1, -1, 1, 1, 1) + bias.view(1, -1, 1, 1, 1)
+
+    def _propagate_adaptive_avg_pool3d(
+        self, x: torch.Tensor, output_size: Tuple[int, int, int]
+    ) -> torch.Tensor:
+        """Propagate bounds through an adaptive average pooling 3D layer"""
+        return F.adaptive_avg_pool3d(x, output_size)
+
+    def _propagate_maxpool3d(
+        self, x: torch.Tensor, layer: nn.MaxPool3d
+    ) -> torch.Tensor:
+        """Propagate bounds through a 3D max pooling layer"""
+        kernel_size = layer.kernel_size
+        stride = layer.stride
+        padding = layer.padding
+        dilation = layer.dilation
+        return F.max_pool3d(
+            x,
+            kernel_size,
+            stride=stride,
+            padding=padding,
+            dilation=dilation,
+            ceil_mode=layer.ceil_mode,
+        )
+
+    def _propagate_linear(
+        self, x: torch.Tensor, layer: nn.Linear
+    ) -> torch.Tensor:
+        """Propagate bounds through a linear layer"""
+        return F.linear(x, layer.weight, layer.bias)
+
+    def _propagate_relu(
+        self, lower: torch.Tensor, upper: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Propagate bounds through a ReLU activation"""
+        lower = F.relu(lower)
+        upper = F.relu(upper)
+        return lower, upper

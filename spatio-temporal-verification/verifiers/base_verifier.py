@@ -33,6 +33,8 @@ class BaseVerifier:
             return self._propagate_conv3d(lower_bounds, upper_bounds, layer)
         elif isinstance(layer, nn.ReLU):
             return self._propagate_relu(lower_bounds, upper_bounds)
+        elif isinstance(layer, nn.MaxPool3d):
+            return self._propagate_maxpool3d(lower_bounds, upper_bounds, layer)
         elif isinstance(layer, nn.BatchNorm3d) or isinstance(layer, nn.BatchNorm2d):
             return self._propagate_batchnorm(lower_bounds, upper_bounds, layer)
         elif isinstance(layer, nn.Dropout):
@@ -95,6 +97,43 @@ class BaseVerifier:
 
     def _propagate_relu(self, lower_bound, upper_bound):
         return F.relu(lower_bound), F.relu(upper_bound)
+
+    def _propagate_maxpool3d(self, lower_bound, upper_bound, maxpool_layer):
+        """
+        Propagate bounds through a MaxPool3d layer.
+        
+        MaxPool is a monotonic function, so we can directly apply it to both bounds.
+        
+        Args:
+            lower_bound: Lower bounds of the input
+            upper_bound: Upper bounds of the input
+            maxpool_layer: The MaxPool3d layer to propagate through
+            
+        Returns:
+            Tuple of (lower_bounds, upper_bounds) for the output
+        """
+        # MaxPool3d is monotonic, so we can directly apply it to bounds
+        z_L = F.max_pool3d(
+            lower_bound,
+            kernel_size=maxpool_layer.kernel_size,
+            stride=maxpool_layer.stride,
+            padding=maxpool_layer.padding,
+            dilation=maxpool_layer.dilation,
+            ceil_mode=maxpool_layer.ceil_mode,
+            return_indices=False
+        )
+        
+        z_U = F.max_pool3d(
+            upper_bound,
+            kernel_size=maxpool_layer.kernel_size,
+            stride=maxpool_layer.stride,
+            padding=maxpool_layer.padding,
+            dilation=maxpool_layer.dilation,
+            ceil_mode=maxpool_layer.ceil_mode,
+            return_indices=False
+        )
+        
+        return z_L, z_U
 
     def _propagate_batchnorm(self, lower_bound, upper_bound, bn_layer):
         running_mean = bn_layer.running_mean

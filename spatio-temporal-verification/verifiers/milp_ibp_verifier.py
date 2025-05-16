@@ -10,6 +10,7 @@ import torch.nn.functional as F
 from gurobipy import GRB
 from models.resnet18 import VideoResNet
 from models.simple3dcnn import Simple3DCNN
+from experiments.udacity_steering_angle.models.udacity_3dcnn import UdacitySteeringAngle_3DCNN, CNN3D
 from .ibp_verifier import IBPVerifier
 
 class MILPIBPVerifier(IBPVerifier):
@@ -518,11 +519,11 @@ class MILPIBPVerifier(IBPVerifier):
         total = x.size(0)
 
         print(f"\nMILP-IBP Verification with epsilon={epsilon}")
-        print(f"Input shape: {x.shape}")
-        print(f"Number of samples: {total}")
+        # print(f"Input shape: {x.shape}")
+        # print(f"Number of samples: {total}")
 
         for i in range(total):
-            print(f"\nVerifying sample {i+1}/{total}")
+            # print(f"\nVerifying sample {i+1}/{total}")
             input_tensor = x[i:i+1]
             y_i = y[i:i+1]
         
@@ -535,11 +536,15 @@ class MILPIBPVerifier(IBPVerifier):
                     lower_bounds_milp, upper_bounds_milp = self.selective_interval_bound_propagation_3dcnn(
                         input_tensor, [epsilon], frame_group
                     )
+                elif isinstance(self.model, UdacitySteeringAngle_3DCNN) or isinstance(self.model.cnn3d, CNN3D):
+                    lower_bounds_milp, upper_bounds_milp = self.selective_interval_bound_propagation_udacity_cnn3d(
+                        input_tensor, [epsilon], frame_group
+                    )
             
             # Print bound statistics
-            print(f"Lower bounds range: [{lower_bounds_milp.min().item():.4f}, {lower_bounds_milp.max().item():.4f}]")
-            print(f"Upper bounds range: [{upper_bounds_milp.min().item():.4f}, {upper_bounds_milp.max().item():.4f}]")
-            print(f"Bound width: {(upper_bounds_milp - lower_bounds_milp).mean().item():.4f}")
+            # print(f"Lower bounds range: [{lower_bounds_milp.min().item():.4f}, {lower_bounds_milp.max().item():.4f}]")
+            # print(f"Upper bounds range: [{upper_bounds_milp.min().item():.4f}, {upper_bounds_milp.max().item():.4f}]")
+            # print(f"Bound width: {(upper_bounds_milp - lower_bounds_milp).mean().item():.4f}")
 
             # Use the same robustness check as IBP
             margin = lower_bounds_milp[0, y_i] - torch.max(
@@ -548,9 +553,86 @@ class MILPIBPVerifier(IBPVerifier):
 
             if margin.item() > 0:
                 verified_correct += 1
-                print(f"Sample {i+1} is robust (margin: {margin.item():.4f})")
-            else:
-                print(f"Sample {i+1} is not robust (margin: {margin.item():.4f})")
+            #     print(f"Sample {i+1} is robust (margin: {margin.item():.4f})")
+            # else:
+            #     print(f"Sample {i+1} is not robust (margin: {margin.item():.4f})")
 
         results[epsilon] = verified_correct / total
         return results
+
+    def selective_interval_bound_propagation_udacity_cnn3d(
+        self,
+        input_tensor: torch.Tensor,
+        epsilons: List[float],
+        sets_of_frames: List[List[int]],
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Selective Interval Bound propagation with LP applied to the first layer of the network
+
+        Args:
+            input_tensor: Input tensor
+            epsilons: List of epsilon values for perturbation
+            sets_of_frames: List of lists each corresponding to one set of shared perturbed frames
+
+        Returns:
+            Tuple of (lower_bounds, upper_bounds) for the entire batch
+        """
+        # Get the CNN3D model from UdacitySteeringAngle_3DCNN wrapper if needed
+        if isinstance(self.model, UdacitySteeringAngle_3DCNN):
+            model = self.model.cnn3d
+        else:
+            model = self.model
+
+        lower_bounds, upper_bounds = None, None
+
+        perturbation_tensor, bounds_dict, equality_dict, shared_dict = (
+            self._generate_perturbation_constraints(
+                input_tensor[0],
+                sets_of_frames,
+                epsilons[0],  # Using the first epsilon value
+                kernel_size=model.conv1.kernel_size,
+                stride=model.conv1.stride,
+                padding=model.conv1.padding,
+            )
+        )
+
+        for i in range(len(input_tensor)):
+            # Compute bounds for the first layer using compute_3D_conv_bounds
+            output_bounds = self._compute_3D_conv_bounds(
+                input_tensor[i],
+                perturbation_tensor,
+                bounds_dict,
+                equality_dict,
+                shared_dict,
+                kernel_size=model.conv1.kernel_size,
+                stride=model.conv1.stride,
+                padding=model.conv1.padding,
+                conv_layer=model.conv1,
+            )
+
+            # Format bounds for the next layer
+            lower_bounds_first, upper_bounds_first = self._format_bounds_for_next_layer(
+                input_tensor[i], output_bounds, model.conv1
+            )
+            
+            lower_bounds_first = lower_bounds_first.unsqueeze(0)
+            upper_bounds_first = upper_bounds_first.unsqueeze(0)
+
+            # Continue with IBP for the rest of the layers
+            lb, ub = self._ibp_propagate_bounds_udacity_cnn3d(
+                input_tensor[i].unsqueeze(0),
+                lower_input=lower_bounds_first,
+                upper_input=upper_bounds_first,
+                skip_first_conv=True,
+            )
+
+            if lower_bounds is None and upper_bounds is None:
+                lower_bounds = lb
+                upper_bounds = ub
+            else:
+                lower_bounds = torch.cat((lower_bounds, lb), dim=0)
+                upper_bounds = torch.cat((upper_bounds, ub), dim=0)
+
+        return lower_bounds, upper_bounds
+    
+    # Add other methods necessary for MILP-IBP verification

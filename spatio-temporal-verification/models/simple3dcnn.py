@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from typing import Tuple, Optional, List
+import math
 
 class Simple3DCNN(nn.Module):
     """
@@ -59,11 +60,28 @@ class Simple3DCNN(nn.Module):
         self.relu3 = nn.ReLU()
         self.bn3 = nn.BatchNorm3d(conv_channels[2])
         
-        # Calculate flattened size after conv layers using a dummy tensor
-        dummy_input = torch.rand(1, self.in_channels, self.num_frames, *self.input_shape)
-        dummy_output = self._forward_conv_layers(dummy_input)
-        self.flattened_size = dummy_output.view(1, -1).size(1)
-        print(f"Flattened size after conv layers: {self.flattened_size}")
+        # Calculate flattened size mathematically instead of using a dummy tensor
+        t, h, w = self.num_frames, self.input_shape[0], self.input_shape[1]
+        
+        # Apply formula for each conv layer: output_size = floor((input_size + 2*padding - kernel_size) / stride + 1)
+        # Conv1
+        t = self._conv_output_size(t, kernel_sizes[0], 1, paddings[0])
+        h = self._conv_output_size(h, kernel_sizes[0], 1, paddings[0])
+        w = self._conv_output_size(w, kernel_sizes[0], 1, paddings[0])
+        
+        # Conv2
+        t = self._conv_output_size(t, kernel_sizes[1], 1, paddings[1])
+        h = self._conv_output_size(h, kernel_sizes[1], 1, paddings[1])
+        w = self._conv_output_size(w, kernel_sizes[1], 1, paddings[1])
+        
+        # Conv3
+        t = self._conv_output_size(t, kernel_sizes[2], 1, paddings[2])
+        h = self._conv_output_size(h, kernel_sizes[2], 1, paddings[2])
+        w = self._conv_output_size(w, kernel_sizes[2], 1, paddings[2])
+        
+        # Calculate final flattened size
+        self.flattened_size = conv_channels[2] * t * h * w
+        # print(f"Calculated flattened size: {self.flattened_size}")
         
         # Fully connected layers
         self.fc1 = nn.Linear(self.flattened_size, fc_hidden)
@@ -74,7 +92,11 @@ class Simple3DCNN(nn.Module):
         
         # Initialize weights
         self._initialize_weights()
-
+    
+    def _conv_output_size(self, input_size, kernel_size, stride, padding, dilation=1):
+        """Calculate output size for a dimension after convolution"""
+        return math.floor((input_size + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1)
+    
     def _forward_conv_layers(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass through convolutional layers"""
         x = self.bn1(self.relu1(self.conv1(x)))

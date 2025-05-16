@@ -10,6 +10,8 @@ import torch.nn.functional as F
 from gurobipy import GRB
 from models.resnet18 import VideoResNet
 from models.simple3dcnn import Simple3DCNN
+from experiments.udacity_steering_angle.models.udacity_3dcnn import UdacitySteeringAngle_3DCNN, CNN3D
+from experiments.udacity_steering_angle.utils.udacity_verification_utils import process_bounding_boxes_udacity, get_bounding_box_info_udacity
 
 from .ibp_verifier import IBPVerifier
 
@@ -498,11 +500,11 @@ class MILPIBPPatchVerifier(IBPVerifier):
         total = x.size(0)
 
         print(f"\nMILP-IBP Patch Verification with epsilon={epsilon}")
-        print(f"Input shape: {x.shape}")
-        print(f"Number of samples: {total}")
+        # print(f"Input shape: {x.shape}")
+        # print(f"Number of samples: {total}")
 
         for i in range(total):
-            print(f"\nVerifying sample {i+1}/{total}")
+            # print(f"\nVerifying sample {i+1}/{total}")
             input_tensor = x[i:i+1]
             y_i = y[i:i+1]
         
@@ -515,11 +517,19 @@ class MILPIBPPatchVerifier(IBPVerifier):
                     lower_bounds_milp, upper_bounds_milp = self.selective_interval_bound_propagation_patch_3dcnn(
                         input_tensor, bounding_box_info, epsilon
                     )
+                elif isinstance(self.model, UdacitySteeringAngle_3DCNN) or isinstance(self.model.cnn3d, CNN3D):
+                    # Get bounding box info for the current sample
+                    filename = str(i)  # This should be updated to get the actual filename
+                    lower_bounds_milp, upper_bounds_milp = self.selective_interval_bound_propagation_patch_udacity_cnn3d(
+                        input_tensor, bounding_box_info, epsilon, filename
+                    )
+                else:
+                    raise ValueError(f"Unsupported model type: {type(self.model)}")
             
             # Print bound statistics
-            print(f"Lower bounds range: [{lower_bounds_milp.min().item():.4f}, {lower_bounds_milp.max().item():.4f}]")
-            print(f"Upper bounds range: [{upper_bounds_milp.min().item():.4f}, {upper_bounds_milp.max().item():.4f}]")
-            print(f"Bound width: {(upper_bounds_milp - lower_bounds_milp).mean().item():.4f}")
+            # print(f"Lower bounds range: [{lower_bounds_milp.min().item():.4f}, {lower_bounds_milp.max().item():.4f}]")
+            # print(f"Upper bounds range: [{upper_bounds_milp.min().item():.4f}, {upper_bounds_milp.max().item():.4f}]")
+            # print(f"Bound width: {(upper_bounds_milp - lower_bounds_milp).mean().item():.4f}")
 
             # Use the same robustness check as IBP
             margin = lower_bounds_milp[0, y_i] - torch.max(
@@ -528,9 +538,357 @@ class MILPIBPPatchVerifier(IBPVerifier):
 
             if margin.item() > 0:
                 verified_correct += 1
-                print(f"Sample {i+1} is robust (margin: {margin.item():.4f})")
-            else:
-                print(f"Sample {i+1} is not robust (margin: {margin.item():.4f})")
+            #     print(f"Sample {i+1} is robust (margin: {margin.item():.4f})")
+            # else:
+            #     print(f"Sample {i+1} is not robust (margin: {margin.item():.4f})")
 
         results[epsilon] = verified_correct / total
         return results
+
+    def generate_perturbation_constraints_patch_udacity(
+        self,
+        input_tensor: torch.Tensor,
+        frame_patch_locations: Dict[int, List[Tuple[int, int, int, int]]],
+        epsilon: float,
+    ) -> Tuple[torch.Tensor, Dict, Dict, Dict]:
+        """
+        Generate perturbation constraints for a 3D CNN under patch constraints.
+
+        Args:
+            input_tensor: The base input tensor (C, D, H, W)
+            frame_patch_locations: Dictionary mapping frame indices to lists of (x, y, w, h) tuples
+            epsilon: Maximum allowed perturbation
+
+        Returns:
+            Tuple containing:
+            - perturbation_tensor: The tensor where perturbations will be applied
+            - bounds_dict: Bounds on the perturbation values
+            - equality_dict: Fixed values for frames not in specified groups
+            - shared_dict: Dictionary for shared perturbation constraints
+        """
+        C, D, H, W = input_tensor.shape
+        bounds_dict = {}
+        equality_dict = {}
+        shared_dict = {}
+        patch_shared_indices = {}
+
+        # Iterate through each frame and its list of bounding boxes
+        for frame_idx, boxes in frame_patch_locations.items():
+            for x, y, w, h in boxes:
+                for c in range(C):
+                    for i in range(w):
+                        for j in range(h):
+                            h_idx = x + i
+                            w_idx = y + j
+                            if 0 <= frame_idx < D and 0 <= h_idx < H and 0 <= w_idx < W:
+                                flat_index = (
+                                    c * D * H * W
+                                    + frame_idx * H * W
+                                    + h_idx * W
+                                    + w_idx
+                                )
+                                bounds_dict[flat_index] = {
+                                    "lower": -epsilon,
+                                    "upper": epsilon,
+                                }
+
+                                key = (c, i, j)
+                                if key in patch_shared_indices:
+                                    shared_dict[flat_index] = patch_shared_indices[key]
+                                else:
+                                    patch_shared_indices[key] = flat_index
+
+        perturbation_tensor = torch.zeros_like(input_tensor)
+        
+        return perturbation_tensor, bounds_dict, equality_dict, shared_dict
+    
+    def compute_3D_conv_bounds_patch_udacity(
+        self,
+        input_tensor: torch.Tensor,
+        perturbation_tensor: torch.Tensor,
+        bounds_dict: Dict,
+        equality_dict: Dict,
+        shared_dict: Dict,
+        kernel_size: int,
+        stride: int = 1,
+        padding: int = 0,
+        conv_layer: nn.Module = None,
+    ) -> List[List[Tuple[float, float]]]:
+        """
+        Computes bounds on the output of the first 3D convolutional layer given patch perturbation constraints.
+
+        Args:
+            input_tensor: The base input tensor
+            perturbation_tensor: The perturbation tensor (not used directly)
+            bounds_dict: Bounds on the perturbation values
+            equality_dict: Fixed values for non-perturbed elements
+            shared_dict: Dictionary for shared perturbation constraints
+            kernel_size: Kernel size of the convolutional layer
+            stride: Stride of the convolutional layer
+            padding: Padding applied to the convolutional layer
+            conv_layer: The first convolutional layer to compute bounds for
+
+        Returns:
+            List of computed lower and upper bounds for each output element of the first convolutional layer
+        """
+        # Handle tuple kernel size
+        if isinstance(kernel_size, tuple):
+            kernel_d, kernel_h, kernel_w = kernel_size
+        else:
+            kernel_d = kernel_h = kernel_w = kernel_size
+
+        # Handle tuple stride
+        if isinstance(stride, tuple):
+            stride_d, stride_h, stride_w = stride
+        else:
+            stride_d = stride_h = stride_w = stride
+
+        # Handle tuple padding
+        if isinstance(padding, tuple):
+            padding_d, padding_h, padding_w = padding
+        else:
+            padding_d = padding_h = padding_w = padding
+
+        weights = conv_layer.weight.cpu().detach().numpy()
+        biases = conv_layer.bias.cpu().detach().numpy()
+        out_channels, in_channels, k_d, k_h, k_w = weights.shape
+
+        base_input = input_tensor.flatten().cpu().detach().numpy()
+        C, D, H, W = input_tensor.shape
+
+        perturbed_indices = set(bounds_dict.keys())
+
+        m = gp.Model("conv_bounds_patch")
+        m.setParam("OutputFlag", 0)
+
+        perturb_vars = {}
+        for idx in perturbed_indices:
+            lb = bounds_dict[idx].get("lower", -GRB.INFINITY)
+            ub = bounds_dict[idx].get("upper", GRB.INFINITY)
+            perturb_vars[idx] = m.addVar(lb=lb, ub=ub, name=f"perturb_{idx}")
+
+        for idx1, idx2 in shared_dict.items():
+            if idx1 in perturb_vars and idx2 in perturb_vars:
+                m.addConstr(
+                    perturb_vars[idx1] == perturb_vars[idx2],
+                    name=f"shared_{idx1}_{idx2}",
+                )
+
+        m.update()
+
+        output_bounds = []
+
+        D_out = (D + 2 * padding_d - k_d) // stride_d + 1
+        H_out = (H + 2 * padding_h - k_h) // stride_h + 1
+        W_out = (W + 2 * padding_w - k_w) // stride_w + 1
+
+        for out_channel in range(out_channels):
+            channel_bounds = []
+
+            for d_out in range(D_out):
+                for h_out in range(H_out):
+                    for w_out in range(W_out):
+                        const_term = 0.0
+                        perturb_expr = gp.LinExpr()
+
+                        for in_channel in range(in_channels):
+                            for kd in range(k_d):
+                                for kh in range(k_h):
+                                    for kw in range(k_w):
+                                        input_d = d_out * stride_d + kd - padding_d
+                                        input_h = h_out * stride_h + kh - padding_h
+                                        input_w = w_out * stride_w + kw - padding_w
+
+                                        if (
+                                            0 <= input_d < D
+                                            and 0 <= input_h < H
+                                            and 0 <= input_w < W
+                                        ):
+                                            flat_index = (
+                                                in_channel * D * H * W
+                                                + input_d * H * W
+                                                + input_h * W
+                                                + input_w
+                                            )
+                                            weight = weights[
+                                                out_channel, in_channel, kd, kh, kw
+                                            ]
+
+                                            if flat_index in perturb_vars:
+                                                perturb_expr += (
+                                                    weight * perturb_vars[flat_index]
+                                                )
+                                            else:
+                                                const_term += (
+                                                    weight * base_input[flat_index]
+                                                )
+
+                        const_term += biases[out_channel]
+
+                        if perturb_expr.size() == 0:
+                            lower_bound = upper_bound = const_term
+                        else:
+                            # Minimize objective to get lower bound
+                            m.setObjective(perturb_expr + const_term, GRB.MINIMIZE)
+                            m.optimize()
+                            lower_bound = (
+                                m.ObjVal if m.status == GRB.OPTIMAL else const_term
+                            )
+
+                            # Maximize objective to get upper bound
+                            m.setObjective(perturb_expr + const_term, GRB.MAXIMIZE)
+                            m.optimize()
+                            upper_bound = (
+                                m.ObjVal if m.status == GRB.OPTIMAL else const_term
+                            )
+
+                        channel_bounds.append((float(lower_bound), float(upper_bound)))
+
+            output_bounds.append(channel_bounds)
+
+        return output_bounds
+    
+    def format_bounds_for_next_layer_udacity(
+        self, 
+        input_tensor: torch.Tensor, 
+        output_bounds: List[List[Tuple[float, float]]], 
+        conv_layer: nn.Module
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Formats the computed bounds from a convolutional layer to be used as input bounds for the next layer.
+
+        Args:
+            input_tensor: The input batch tensor with shape (batch_size, channels, depth, height, width)
+            output_bounds: Bounds computed by `compute_3D_conv_bounds_patch_udacity`
+            conv_layer: The convolutional layer
+
+        Returns:
+            Tuple of (lower_bounds, upper_bounds) tensors formatted for the next layer input
+        """
+        # Calculate output shape based on input shape and conv layer parameters
+        C, D, H, W = input_tensor.shape
+        out_channels = conv_layer.weight.size(0)
+        kernel_size = conv_layer.kernel_size
+        stride = conv_layer.stride
+        padding = conv_layer.padding
+        
+        # Handle tuple parameters
+        if isinstance(kernel_size, tuple):
+            kernel_d, kernel_h, kernel_w = kernel_size
+        else:
+            kernel_d = kernel_h = kernel_w = kernel_size
+        
+        if isinstance(stride, tuple):
+            stride_d, stride_h, stride_w = stride
+        else:
+            stride_d = stride_h = stride_w = stride
+            
+        if isinstance(padding, tuple):
+            padding_d, padding_h, padding_w = padding
+        else:
+            padding_d = padding_h = padding_w = padding
+        
+        # Calculate output dimensions
+        D_out = (D + 2 * padding_d - kernel_d) // stride_d + 1
+        H_out = (H + 2 * padding_h - kernel_h) // stride_h + 1
+        W_out = (W + 2 * padding_w - kernel_w) // stride_w + 1
+        
+        # Initialize tensors for lower and upper bounds
+        lower_bounds = torch.empty((out_channels, D_out, H_out, W_out))
+        upper_bounds = torch.empty((out_channels, D_out, H_out, W_out))
+        
+        # Reshape bounds into tensors
+        for c in range(out_channels):
+            idx = 0
+            for d in range(D_out):
+                for h in range(H_out):
+                    for w in range(W_out):
+                        lower, upper = output_bounds[c][idx]
+                        lower_bounds[c, d, h, w] = lower
+                        upper_bounds[c, d, h, w] = upper
+                        idx += 1
+        
+        # Move tensors to device
+        lower_bounds = lower_bounds.to(self.device)
+        upper_bounds = upper_bounds.to(self.device)
+        
+        return lower_bounds, upper_bounds
+    
+    def selective_interval_bound_propagation_patch_udacity_cnn3d(
+        self, 
+        input_tensor: torch.Tensor, 
+        bounding_box_info: Dict, 
+        epsilon: float, 
+        filename: str
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Selective Interval Bound propagation with LP applied to the first layer of the network for patch-based verification
+
+        Args:
+            input_tensor: Input tensor
+            bounding_box_info: Dictionary containing patch information
+            epsilon: Epsilon perturbation value
+            filename: Name of the image file
+
+        Returns:
+            Tuple of (lower_bounds, upper_bounds) for the entire batch
+        """
+        # Get the CNN3D model from UdacitySteeringAngle_3DCNN wrapper if needed
+        if isinstance(self.model, UdacitySteeringAngle_3DCNN):
+            model = self.model.cnn3d
+        else:
+            model = self.model
+            
+        lower_bounds, upper_bounds = None, None
+        
+        # Process the bounding boxes to get frame_patch_locations
+        frame_patch_locations = process_bounding_boxes_udacity(
+            bounding_box_info, input_tensor.shape[3], input_tensor.shape[4], filename
+        )
+        
+        for i in range(len(input_tensor)):
+            # Generate perturbation constraints
+            perturbation_tensor, bounds_dict, equality_dict, shared_dict = (
+                self.generate_perturbation_constraints_patch_udacity(
+                    input_tensor[i], frame_patch_locations, epsilon
+                )
+            )
+            
+            # Get bounds for the first layer using MILP
+            output_bounds = self.compute_3D_conv_bounds_patch_udacity(
+                input_tensor[i],
+                perturbation_tensor,
+                bounds_dict,
+                equality_dict,
+                shared_dict,
+                kernel_size=model.conv1.kernel_size,
+                stride=model.conv1.stride,
+                padding=model.conv1.padding,
+                conv_layer=model.conv1,
+            )
+            
+            # Format bounds for the next layer
+            lower_bounds_first, upper_bounds_first = self.format_bounds_for_next_layer_udacity(
+                input_tensor[i], output_bounds, model.conv1
+            )
+            
+            # Unsqueeze to add batch dimension
+            lower_bounds_first = lower_bounds_first.unsqueeze(0)
+            upper_bounds_first = upper_bounds_first.unsqueeze(0)
+            
+            # Continue IBP propagation for the remaining layers
+            lb, ub = self._ibp_propagate_bounds_udacity_cnn3d(
+                input_tensor[i].unsqueeze(0),
+                lower_input=lower_bounds_first,
+                upper_input=upper_bounds_first,
+                skip_first_conv=True,
+            )
+            
+            if lower_bounds is None and upper_bounds is None:
+                lower_bounds = lb
+                upper_bounds = ub
+            else:
+                lower_bounds = torch.cat((lower_bounds, lb), dim=0)
+                upper_bounds = torch.cat((upper_bounds, ub), dim=0)
+                
+        return lower_bounds, upper_bounds

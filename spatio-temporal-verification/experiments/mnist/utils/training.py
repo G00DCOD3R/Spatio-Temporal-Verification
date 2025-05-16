@@ -33,6 +33,7 @@ def evaluate(model: nn.Module, data_loader: DataLoader, criterion: nn.Module, de
     avg_loss = total_loss / len(data_loader)
     return acc, avg_loss
 
+
 def train(model: nn.Module, train_loader: DataLoader, val_loader: DataLoader, 
           optimizer: torch.optim.Optimizer, criterion: nn.Module, 
           device: torch.device, model_path: str, epochs: int = 10) -> None:
