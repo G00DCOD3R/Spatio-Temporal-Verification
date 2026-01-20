@@ -21,7 +21,10 @@ spatio-temporal-verification/
 │   ├── base_verifier.py     # Base verifier class
 │   ├── ibp_verifier.py      # IBP for neural networks
 │   ├── milp_ibp_verifier.py # MILP-IBP hybrid verifier
-│   └── milp_ibp_patch_verifier.py  # MILP-IBP Patch verifier
+│   ├── milp_ibp_patch_verifier.py  # MILP-IBP Patch verifier
+│   ├── closed_form_ibp_verifier.py # Closed form IBP hybrid verifier
+│   ├── closed_form_lipschitz_verifier.py # Closed form Lipschitz hybrid verifier
+│   └── closed_form_lownerjohn_verifier.py  # Closed form Löwner-John hybrid verifier
 └── tests/                   # Unit tests
 ```
 
