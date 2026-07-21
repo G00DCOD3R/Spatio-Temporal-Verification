@@ -1,199 +1,124 @@
-# Spatio-temporal Verification
+# Spatio-Temporal Verification
 
-This project implements various verification methods for neural networks, focusing on spatio-temporal properties.
+This project implements clean, robust verification methods for 3D Convolutional Neural Networks (3D-CNNs) on spatio-temporal video classification and sequence prediction tasks.
 
 ## Project Structure
 
 ```
-spatio-temporal-verification/
-├── experiments/
-│   ├── mnist/
-│   │   ├── checkpoints/      # Model checkpoints
-│   │   └── models/           # MNIST-specific model implementations
-│   └── udacity_steering_angle/
-│       ├── checkpoints/      # Steering angle model checkpoints
-│       ├── models/           # Steering angle model implementations
-│       └── utils/            # Dataset, training and verification utilities
-├── models/
-│   └── resnet18.py          # Base ResNet18 implementation
-├── utils/                   # Utility functions
-├── verifiers/
-│   ├── base_verifier.py     # Base verifier class
-│   ├── ibp_verifier.py      # IBP for neural networks
-│   ├── milp_ibp_verifier.py # MILP-IBP hybrid verifier
-│   ├── milp_ibp_patch_verifier.py  # MILP-IBP Patch verifier
-│   ├── closed_form_ibp_verifier.py # Closed form IBP hybrid verifier
-│   ├── closed_form_lipschitz_verifier.py # Closed form Lipschitz hybrid verifier
-│   └── closed_form_lownerjohn_verifier.py  # Closed form Löwner-John hybrid verifier
-└── tests/                   # Unit tests
+spatio_temporal_verification/
+├── notebooks/                       # Experimental Jupyter Notebooks
+│   ├── MNISTVideoTraining.ipynb
+│   ├── MNISTVideoVerification-Closed_form_IBP_Lipschitz_LJ_FULLVALSET.ipynb
+│   ├── MNISTVideoVerification-Closed_form_ablation.ipynb
+│   ├── Simple3DCNN-MedMNISTSynapse3D-Verification-ClosedForm-Lipschitz.ipynb
+│   ├── UCF-101-TrainingVerification-3DCNN-RGB-32_32_30_rgb_5_class-LIPS.ipynb
+│   ├── UdacitySteeringAngle-Training-3DCNN.ipynb
+│   └── UdacitySteeringAngle-Verification-3DCNN-ClosedFormLips.ipynb
+├── experiments/                     # Experiment implementations by domain
+│   ├── mnist/                       # MNIST video classification experiment
+│   │   ├── checkpoints/
+│   │   ├── models/                  # MNISTSimple3DCNN, MNISTResNet18
+│   │   └── utils/                   # MNISTVideoDataset, training functions
+│   ├── ucf_101/                     # UCF-101 action recognition experiment
+│   │   ├── checkpoints/
+│   │   ├── models/                  # UCF101SimpleCNN
+│   │   └── utils/                   # UCF-101 dataset utilities and training
+│   ├── udacity_steering_angle/      # Udacity steering angle prediction experiment
+│   │   ├── checkpoints/
+│   │   ├── models/                  # UdacitySteeringAngle_3DCNN, CNN3D
+│   │   └── utils/                   # UdacitySteeringAngleDataset, training
+│   └── medmnist/                    # MedMNIST 3D Synapse experiment
+│       ├── checkpoints/
+│       ├── models/                  # MedMNISTSimple3DCNN
+│       └── utils/                   # MedMNIST3DDataset, Transform3D
+├── verifiers/                       # Centralized robustness verifier implementations
+│   ├── base_verifier.py             # Base verifier class with recursive atomic layer extraction
+│   ├── ibp_verifier.py              # Interval Bound Propagation (IBP)
+│   ├── closed_form_ibp_verifier.py   # Analytical closed-form 1st layer bounds + IBP
+│   ├── closed_form_lipschitz_verifier.py # Analytical 1st layer bounds + L_∞ to L_2 Lipschitz propagation
+│   ├── closed_form_lownerjohn_verifier.py # Analytical 1st layer bounds + Löwner-John ellipsoid propagation
+│   ├── milp_ibp_verifier.py         # MILP + IBP hybrid verifier (requires Gurobi)
+│   └── milp_ibp_patch_verifier.py   # MILP + IBP patch verifier (requires Gurobi)
+├── main.py                          # Unified CLI entry point for running experiments & verifiers
+└── tests/                           # Pytest test suite
 ```
+
+> [!NOTE]
+> All reference experimental code, interactive evaluations, and ablation studies reside inside the [notebooks](https://github.com/SherwinVarghese/Spatio-Temporal-Verification/tree/main/spatio_temporal_verification/notebooks) directory.
 
 ## Setup
 
-This project uses Poetry for dependency management. To get started:
-
-1. Install Poetry if you haven't already:
-   ```bash
-   curl -sSL https://install.python-poetry.org | python3 -
-   ```
-
-2. Install dependencies:
-   ```bash
-   poetry install
-   ```
-
-3. Activate the virtual environment:
-   ```bash
-   poetry shell
-   ```
-
-## Running Tests
-
-To run the test suite:
+This project uses standard Python dependency environments or Poetry:
 
 ```bash
-poetry run pytest
+# Using conda
+conda activate vas
+
+# Or using poetry
+poetry install
 ```
 
-## Datasets
-All the datasets used for the experiments are either publicly available or can be downloaded from the [Zenodo](https://zenodo.org/records/15426146) repository.
+## Running Experiments
+
+You can run training and verification for any experiment using the unified CLI in `main.py`:
+
+```bash
+PYTHONPATH=spatio_temporal_verification python spatio_temporal_verification/main.py [options]
+```
+
+### CLI Arguments
+
+- `--experiment`: Experiment domain to run (`mnist`, `ucf101`, `udacity`, `medmnist`, or `all`). Default: `mnist`.
+- `--mode`: Execution mode (`verify` or `train`). Default: `verify`.
+- `--verifier`: Robustness verification method (`closed_form_ibp`, `closed_form_lips`, `closed_form_lj`, `ibp`, `milp`, `milp_patch`). Default: `closed_form_ibp`.
+- `--eps`: Perturbation magnitude(s) (e.g. `--eps 0.001 0.005`). Default: `0.001`.
+- `--num_samples`: Number of test samples to verify. Default: `20`.
+- `--batch_size`: Batch size for dataloaders. Default: `8`.
+- `--dataset_path`: Custom dataset path (optional).
+
+### Usage Examples
+
+1. **Run MNIST Verification with Closed-Form IBP**:
+   ```bash
+   PYTHONPATH=spatio_temporal_verification python spatio_temporal_verification/main.py --experiment mnist --mode verify --verifier closed_form_ibp --num_samples 50
+   ```
+
+2. **Run UCF-101 Verification with Closed-Form Lipschitz**:
+   ```bash
+   PYTHONPATH=spatio_temporal_verification python spatio_temporal_verification/main.py --experiment ucf101 --mode verify --verifier closed_form_lips --num_samples 20
+   ```
+
+3. **Run Udacity Steering Angle Verification with Closed-Form Löwner-John**:
+   ```bash
+   PYTHONPATH=spatio_temporal_verification python spatio_temporal_verification/main.py --experiment udacity --mode verify --verifier closed_form_lj --num_samples 20
+   ```
+
+4. **Run MedMNIST 3D Verification**:
+   ```bash
+   PYTHONPATH=spatio_temporal_verification python spatio_temporal_verification/main.py --experiment medmnist --mode verify --verifier closed_form_ibp --num_samples 20
+   ```
+
+5. **Run Verification across ALL Experiments**:
+   ```bash
+   PYTHONPATH=spatio_temporal_verification python spatio_temporal_verification/main.py --experiment all --mode verify --num_samples 10
+   ```
 
 ## Verification Methods
 
-The project implements several verification methods:
+1. **Closed-Form IBP (`ClosedFormIBPVerifier`)**: Derives exact analytical bounds for structured $L_\infty$ perturbations on the first Conv3D layer, followed by Interval Bound Propagation (IBP) through subsequent layers.
+2. **Closed-Form Lipschitz (`ClosedFormLipschitzVerifier`)**: Combines analytical first-layer bounds with $L_\infty \to L_2$ norm conversion and spectral-norm Lipschitz propagation.
+3. **Closed-Form Löwner-John (`ClosedFormLownerJohnVerifier`)**: Combines analytical first-layer bounds with Löwner-John ellipsoid propagation (sampling, analytical, or inscribed ellipsoids).
+4. **Standard IBP (`IBPVerifier`)**: Standard coordinate-wise interval bound propagation.
+5. **MILP-IBP Hybrid (`MILPIBPVerifier`)**: Exact Mixed-Integer Linear Programming for the first layer, followed by IBP.
 
-1. Interval Bound Propagation (IBP)
-2. Spatio-Temporal Bound Propagation (STBP)
-3. Spatio-Temporal Bound Propagation with Patch Verification
+## Running Tests
 
-Each verifier is implemented as a separate class in the `verifiers` directory.
-
-## Experiments
-
-### MNIST Video Classification
-This experiment focuses on classifying MNIST digits from video sequences using 3D CNNs and verifying their robustness.
-
-### Udacity Steering Angle Prediction
-
-This module implements a 3D CNN model for predicting steering angles from sequences of frames from the Udacity self-driving car dataset, along with robustness verification methods.
-
-#### Model Architecture
-
-The architecture consists of a 3D CNN with:
-- Two 3D convolutional layers with batch normalization and ReLU activations
-- Adaptive pooling to handle variable input sizes
-- Three fully connected layers with dropout for regularization
-
-#### Training
-
-To train the model, you can use either:
-
-1. The standalone script:
+To execute the test suite:
 
 ```bash
-python experiments/udacity_steering_angle/train_udacity_model.py \
-    --image_dir /path/to/udacity/center \
-    --labels_file /path/to/udacity/final_example.csv \
-    --output_dir ./outputs \
-    --img_x 90 \
-    --img_y 120 \
-    --num_frames 30 \
-    --num_classes 3 \
-    --batch_size 8 \
-    --learning_rate 0.001 \
-    --epochs 50
+PYTHONPATH=spatio_temporal_verification pytest
 ```
 
-2. The main module with environment variables:
+## Datasets
 
-```bash
-TRAIN_UDACITY=1 \
-UDACITY_DATASET_PATH=/path/to/udacity/dataset \
-NUM_FRAMES=30 \
-NUM_CLASSES=3 \
-BATCH_SIZE=8 \
-EPOCHS=50 \
-python spatio-temporal-verification/main.py
-```
-
-#### Verification
-
-The module includes three verification methods:
-1. **IBP (Interval Bound Propagation)**: Fast but less precise bounds.
-2. **MILP-IBP**: Mixed Integer Linear Programming for the first layer, followed by IBP for the rest.
-3. **MILP-IBP-Patch**: Similar to MILP-IBP but only applying perturbations to specific patches (e.g., objects detected in frames).
-
-##### Running Verification
-
-1. Using the standalone script:
-
-```bash
-python experiments/udacity_steering_angle/verify_udacity_model.py \
-    --dataset_path /path/to/udacity \
-    --bounding_box_path /path/to/udacity/bounding_boxes \
-    --model_path /path/to/model/checkpoint.pth \
-    --num_frames 30 \
-    --num_classes 3 \
-    --epsilons 0.00001 0.0001 0.001 \
-    --frames 0 1 2 3 4 \
-    --batch_size 1 \
-    --num_batches 1 \
-    --run_ibp \
-    --run_milp_ibp \
-    --run_milp_ibp_patch
-```
-
-2. Using the main module with environment variables:
-
-```bash
-VERIFY_UDACITY=1 \
-UDACITY_DATASET_PATH=/path/to/udacity/dataset \
-BOUNDING_BOX_PATH=/path/to/udacity/bounding_boxes \
-MODEL_PATH=/path/to/model/checkpoint.pth \
-NUM_FRAMES=30 \
-NUM_CLASSES=3 \
-EPSILONS="0.00001,0.0001,0.001" \
-FRAMES="0,1,2,3,4" \
-BATCH_SIZE=1 \
-NUM_BATCHES=1 \
-RUN_IBP=1 \
-RUN_MILP_IBP=1 \
-RUN_MILP_IBP_PATCH=1 \
-python spatio-temporal-verification/main.py
-```
-
-##### Bounding Box Format
-
-For patch-based verification (MILP-IBP-Patch), you need to provide bounding box files in JSON format. Each file should be named after the corresponding frame ID with a "_tracked.json" suffix and contain the following structure:
-
-```json
-{
-  "xyxyn": [
-    [x1, y1, x2, y2],  // Normalized coordinates for object 1
-    [x1, y1, x2, y2]   // Normalized coordinates for object 2
-  ]
-}
-```
-
-##### Dataset
-
-The Udacity steering angle dataset should be organized as follows:
-The dataset is available to download from the [Zenodo](https://zenodo.org/records/15426146) repository.
-
-
-```
-udacity_dataset/
-├── center/                # Directory containing center camera images
-│   ├── frame_id1.jpg
-│   ├── frame_id2.jpg
-│   └── ...
-├── final_example.csv      # CSV file containing frame IDs and steering angles
-└── bounding_boxes/        # Directory containing bounding box JSON files
-    ├── frame_id1_tracked.json
-    ├── frame_id2_tracked.json
-    └── ...
-```
-
-The CSV file should have at least these columns:
-- `frame_id`: Identifier for each frame
-- `steering_angle`: Continuous steering angle value between -1.0 and 1.0 
+All datasets used in the experiments are publicly available or can be downloaded from the [Zenodo Repository](https://zenodo.org/records/15426146).
