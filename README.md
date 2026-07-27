@@ -122,3 +122,31 @@ PYTHONPATH=spatio_temporal_verification pytest
 ## Datasets
 
 All datasets used in the experiments are publicly available or can be downloaded from the [Zenodo Repository](https://zenodo.org/records/15426146).
+
+## Publications
+
+If you use this codebase or verification methods in your research, please cite our paper:
+
+> **Hybrid Robustness Verification for Spatio-Temporal Neural Networks**  
+> Sherwin Varghese, Matthew Wicker, and Alessio Lomuscio.  
+> *AI Verification*, Springer Nature Switzerland, 2027.  
+> Link: [https://link.springer.com/chapter/10.1007/978-3-032-32357-6_1](https://link.springer.com/chapter/10.1007/978-3-032-32357-6_1)
+
+### BibTeX
+
+```bibtex
+@InProceedings{10.1007/978-3-032-32357-6_1,
+author="Varghese, Sherwin
+and Wicker, Matthew
+and Lomuscio, Alessio",
+editor="Avni, Guy
+and Schilling, Christian",
+title="Hybrid Robustness Verification for Spatio-Temporal Neural Networks",
+booktitle="AI Verification",
+year="2027",
+publisher="Springer Nature Switzerland",
+address="Cham",
+pages="3--35",
+isbn="978-3-032-32357-6"
+}
+```
