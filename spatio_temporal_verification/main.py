@@ -289,9 +289,9 @@ def run_medmnist_experiment(args, device):
     print("==================================================")
     
     in_channels = 1
-    num_classes = 5
-    input_frames = 64
-    resize_shape = (64, 64)
+    num_classes = 2
+    input_frames = 32
+    resize_shape = (32, 32)
     
     model = MedMNISTSimple3DCNN(
         in_channels=in_channels,
@@ -302,7 +302,7 @@ def run_medmnist_experiment(args, device):
     model.eval()
     
     cur_dir = os.path.dirname(os.path.abspath(__file__))
-    model_path = os.path.join(cur_dir, "experiments/medmnist/checkpoints/best_medmnist_model.pth")
+    model_path = os.path.join(cur_dir, "experiments/medmnist/checkpoints/best_medmnist_32_model.pth")
     if os.path.exists(model_path):
         print(f"Loading checkpoint from {model_path}")
         model.load_state_dict(torch.load(model_path, map_location=device))
@@ -315,11 +315,8 @@ def run_medmnist_experiment(args, device):
     verifier = get_verifier(args.verifier, model, str(device))
     print(f"\nRunning verifier '{args.verifier}' on {args.num_samples} samples with epsilons={epsilons}...")
     
-    try:
-        dataset = MedMNIST3DDataset(npz_file=args.dataset_path, split="test", num_samples=args.num_samples)
-        loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False)
-    except Exception:
-        loader = None
+    dataset = MedMNIST3DDataset(npz_file=args.dataset_path, split="test", num_samples=args.num_samples)
+    loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False)
         
     results = defaultdict(list)
     total_time = 0.0
