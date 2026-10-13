@@ -30,6 +30,11 @@ from .ibp_verifier import IBPVerifier
 from .closed_form_ibp_verifier import ClosedFormIBPVerifier, LayerBounds, PerturbationSpec
 from .closed_form_lipschitz_verifier import ClosedFormLipschitzVerifier
 from .closed_form_lownerjohn_verifier import ClosedFormLownerJohnVerifier, Ellipsoid
+from .relaxed_verifiers import (
+    RelaxedIBPVerifier,
+    RelaxedLipschitzVerifier,
+    RelaxedLownerJohnVerifier,
+)
 
 try:
     from .milp_ibp_verifier import MILPIBPVerifier
@@ -49,6 +54,9 @@ __all__ = [
     "ClosedFormIBPVerifier",
     "ClosedFormLipschitzVerifier",
     "ClosedFormLownerJohnVerifier",
+    "RelaxedIBPVerifier",
+    "RelaxedLipschitzVerifier",
+    "RelaxedLownerJohnVerifier",
     # Data classes
     "LayerBounds",
     "PerturbationSpec",
