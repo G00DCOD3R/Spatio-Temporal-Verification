@@ -22,11 +22,11 @@ wheels/
 *.egg
 
 # Model checkpoints
-# experiments/mnist/checkpoints/
-# checkpoints/
-# *.pth
-# *.pt
-# *.onnx
+checkpoints/
+*.pth
+*.pt
+*.onnx
+*.ckpt
 
 # macOS
 .DS_Store

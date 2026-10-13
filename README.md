@@ -2,6 +2,18 @@
 
 This project implements clean, robust verification methods for 3D Convolutional Neural Networks (3D-CNNs) on spatio-temporal video classification and sequence prediction tasks.
 
+## Model Checkpoints
+
+Place each checkpoint in `spatio_temporal_verification/experiments/<experiment>/checkpoints/`
+
+For example, place the MedMNIST 32-frame checkpoint at:
+
+```text
+spatio_temporal_verification/experiments/medmnist/checkpoints/best_medmnist_32_model.pth
+```
+
+Use the model architecture and preprocessing settings that match the checkpoint. 
+
 ## Project Structure
 
 ```
