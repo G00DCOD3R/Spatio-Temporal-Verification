@@ -47,9 +47,7 @@ def get_verifier(verifier_name: str, model: nn.Module, device: str,
     relaxed_classes = {
         "relaxed_ibp": RelaxedIBPVerifier,
         "relaxed_lips": RelaxedLipschitzVerifier,
-        "relaxed_lipschitz": RelaxedLipschitzVerifier,
         "relaxed_lj": RelaxedLownerJohnVerifier,
-        "relaxed_lownerjohn": RelaxedLownerJohnVerifier,
     }
     if name in relaxed_classes:
         return relaxed_classes[name](
@@ -404,11 +402,12 @@ def main():
         help="Robustness verifier technique",
     )
     parser.add_argument(
-        "--relaxation_lambda", "--lambda",
+        "--lambda",
         dest="relaxation_lambda",
         type=float,
-        default=0.0,
-        help="Relaxed verifier lambda in [0, 1]: 0 means shared, 1 means independent.",
+        nargs="+",
+        default=[0.0],
+        help="Relaxed verifier lambda values in [0, 1], e.g. --lambda 0 0.5 1.",
     )
     parser.add_argument(
         "--eps",
@@ -441,33 +440,27 @@ def main():
         help="Custom dataset directory path",
     )
     
-    parser.add_argument(
-        "--compare_relaxed_ibp",
-        action="store_true",
-        help="Compare original and relaxed IBP at lambda=0 on identical MedMNIST samples.",
-    )
     args = parser.parse_args()
-    if not 0.0 <= args.relaxation_lambda <= 1.0:
-        parser.error("--relaxation_lambda must be finite and in [0, 1].")
-    if args.compare_relaxed_ibp:
-        if args.experiment != "medmnist" or args.mode != "verify":
-            parser.error("--compare_relaxed_ibp requires --experiment medmnist --mode verify.")
-        if args.num_samples < 1 or args.batch_size < 1:
-            parser.error("Comparison requires positive --num_samples and --batch_size.")
+    if any(not 0.0 <= value <= 1.0 for value in args.relaxation_lambda):
+        parser.error("Every --lambda value must be finite and in [0, 1].")
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
-    if args.verifier.startswith("relaxed_"):
-        print(f"Relaxation lambda: {args.relaxation_lambda}")
-    
-    if args.experiment in ["mnist", "all"]:
-        run_mnist_experiment(args, device)
-    if args.experiment in ["ucf101", "all"]:
-        run_ucf101_experiment(args, device)
-    if args.experiment in ["udacity", "all"]:
-        run_udacity_experiment(args, device)
-    if args.experiment in ["medmnist", "all"]:
-        run_medmnist_experiment(args, device)
+    is_relaxed = args.verifier.startswith("relaxed_")
+    lambda_values = args.relaxation_lambda if is_relaxed else [0.0]
+    for value in lambda_values:
+        run_args = argparse.Namespace(**vars(args))
+        run_args.relaxation_lambda = value
+        if is_relaxed:
+            print(f"\nRelaxation lambda: {value}", flush=True)
+        if args.experiment in ["mnist", "all"]:
+            run_mnist_experiment(run_args, device)
+        if args.experiment in ["ucf101", "all"]:
+            run_ucf101_experiment(run_args, device)
+        if args.experiment in ["udacity", "all"]:
+            run_udacity_experiment(run_args, device)
+        if args.experiment in ["medmnist", "all"]:
+            run_medmnist_experiment(run_args, device)
 
 
 if __name__ == "__main__":
