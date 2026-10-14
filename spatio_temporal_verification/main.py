@@ -30,6 +30,9 @@ from verifiers import (
     BaseVerifier,
     IBPVerifier,
     ClosedFormIBPVerifier,
+    RelaxedIBPVerifier,
+    RelaxedLipschitzVerifier,
+    RelaxedLownerJohnVerifier,
     ClosedFormLipschitzVerifier,
     ClosedFormLownerJohnVerifier,
     MILPIBPVerifier,
@@ -37,9 +40,21 @@ from verifiers import (
 )
 
 
-def get_verifier(verifier_name: str, model: nn.Module, device: str):
+def get_verifier(verifier_name: str, model: nn.Module, device: str,
+                 relaxation_lambda: float = 0.0):
     """Instantiate requested verifier."""
     name = verifier_name.lower()
+    relaxed_classes = {
+        "relaxed_ibp": RelaxedIBPVerifier,
+        "relaxed_lips": RelaxedLipschitzVerifier,
+        "relaxed_lipschitz": RelaxedLipschitzVerifier,
+        "relaxed_lj": RelaxedLownerJohnVerifier,
+        "relaxed_lownerjohn": RelaxedLownerJohnVerifier,
+    }
+    if name in relaxed_classes:
+        return relaxed_classes[name](
+            model, device=device, relaxation_lambda=relaxation_lambda
+        )
     if name == "closed_form_ibp":
         return ClosedFormIBPVerifier(model, device=device)
     elif name in ["closed_form_lips", "closed_form_lipschitz"]:
@@ -103,7 +118,7 @@ def run_mnist_experiment(args, device):
             print("No saved checkpoint found. Evaluating with initialized model.")
         
         model.eval()
-        verifier = get_verifier(args.verifier, model, str(device))
+        verifier = get_verifier(args.verifier, model, str(device), args.relaxation_lambda)
         epsilons = [float(e) for e in args.eps]
         shared_frames = [[3, 4, 5, 6, 7]]  # Middle 5 frames shared
         
@@ -178,7 +193,7 @@ def run_ucf101_experiment(args, device):
     epsilons = [float(e) for e in args.eps]
     shared_frames = [[0, 1, 2, 3, 4]]
     
-    verifier = get_verifier(args.verifier, model, str(device))
+    verifier = get_verifier(args.verifier, model, str(device), args.relaxation_lambda)
     print(f"\nRunning verifier '{args.verifier}' on {args.num_samples} samples with epsilons={epsilons}...")
     
     # Generate test inputs for dry-run verification
@@ -247,7 +262,7 @@ def run_udacity_experiment(args, device):
     epsilons = [float(e) for e in args.eps]
     shared_frames = [[i for i in range(10)]]  # First 10 frames shared
     
-    verifier = get_verifier(args.verifier, model, str(device))
+    verifier = get_verifier(args.verifier, model, str(device), args.relaxation_lambda)
     print(f"\nRunning verifier '{args.verifier}' on {args.num_samples} samples with epsilons={epsilons}...")
     
     dummy_x = torch.randn(args.num_samples, 3, num_frames, img_x, img_y, device=device)
@@ -312,7 +327,7 @@ def run_medmnist_experiment(args, device):
     epsilons = [float(e) for e in args.eps]
     shared_frames = [[i for i in range(16)]]  # First 16 frames shared
     
-    verifier = get_verifier(args.verifier, model, str(device))
+    verifier = get_verifier(args.verifier, model, str(device), args.relaxation_lambda)
     print(f"\nRunning verifier '{args.verifier}' on {args.num_samples} samples with epsilons={epsilons}...")
     
     dataset = MedMNIST3DDataset(npz_file=args.dataset_path, split="test", num_samples=args.num_samples)
@@ -322,7 +337,11 @@ def run_medmnist_experiment(args, device):
     total_time = 0.0
     verified_count = 0
     
-    if loader is not None:
+    with tqdm(
+        total=min(args.num_samples, len(dataset)),
+        desc=f"MedMNIST {args.verifier}",
+        unit="sample",
+    ) as progress:
         for batch_idx, (data, target) in enumerate(loader):
             if verified_count >= args.num_samples:
                 break
@@ -347,6 +366,7 @@ def run_medmnist_experiment(args, device):
                     elapsed = time.perf_counter() - start_t
                     results[eps].append(is_verified)
                     total_time += elapsed
+                progress.update(1)
             verified_count += n_samples
     
     print("\nMedMNIST 3D Verification Results:")
@@ -376,8 +396,19 @@ def main():
         "--verifier",
         type=str,
         default="closed_form_ibp",
-        choices=["closed_form_ibp", "closed_form_lips", "closed_form_lj", "ibp", "milp", "milp_patch"],
+        choices=[
+            "closed_form_ibp", "closed_form_lips", "closed_form_lj",
+            "relaxed_ibp", "relaxed_lips", "relaxed_lipschitz",
+            "relaxed_lj", "relaxed_lownerjohn", "ibp", "milp", "milp_patch",
+        ],
         help="Robustness verifier technique",
+    )
+    parser.add_argument(
+        "--relaxation_lambda", "--lambda",
+        dest="relaxation_lambda",
+        type=float,
+        default=0.0,
+        help="Relaxed verifier lambda in [0, 1]: 0 means shared, 1 means independent.",
     )
     parser.add_argument(
         "--eps",
@@ -410,10 +441,24 @@ def main():
         help="Custom dataset directory path",
     )
     
+    parser.add_argument(
+        "--compare_relaxed_ibp",
+        action="store_true",
+        help="Compare original and relaxed IBP at lambda=0 on identical MedMNIST samples.",
+    )
     args = parser.parse_args()
+    if not 0.0 <= args.relaxation_lambda <= 1.0:
+        parser.error("--relaxation_lambda must be finite and in [0, 1].")
+    if args.compare_relaxed_ibp:
+        if args.experiment != "medmnist" or args.mode != "verify":
+            parser.error("--compare_relaxed_ibp requires --experiment medmnist --mode verify.")
+        if args.num_samples < 1 or args.batch_size < 1:
+            parser.error("Comparison requires positive --num_samples and --batch_size.")
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
+    if args.verifier.startswith("relaxed_"):
+        print(f"Relaxation lambda: {args.relaxation_lambda}")
     
     if args.experiment in ["mnist", "all"]:
         run_mnist_experiment(args, device)
