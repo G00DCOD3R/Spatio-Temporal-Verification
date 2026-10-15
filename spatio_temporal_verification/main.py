@@ -263,30 +263,46 @@ def run_udacity_experiment(args, device):
     verifier = get_verifier(args.verifier, model, str(device), args.relaxation_lambda)
     print(f"\nRunning verifier '{args.verifier}' on {args.num_samples} samples with epsilons={epsilons}...")
     
-    dummy_x = torch.randn(args.num_samples, 3, num_frames, img_x, img_y, device=device)
-    dummy_y = torch.randint(0, num_classes, (args.num_samples,), device=device)
-    
+    dataset = UdacitySteeringAngleDataset(image_dir=args.dataset_path+"/center", 
+                                          labels_file=args.dataset_path+"/final_example.csv", 
+                                          resize_shape=(30, 30), train=False, num_classes=3, num_frames=args.num_samples)
+    loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False)
+
     results = defaultdict(list)
     total_time = 0.0
+    verified_count = 0
     
-    for i in range(args.num_samples):
-        sample_x = dummy_x[i:i+1]
-        sample_y = dummy_y[i].item()
-        
-        for eps in epsilons:
-            start_t = time.perf_counter()
-            if hasattr(verifier, 'verify'):
-                res = verifier.verify(sample_x, eps, shared_frames, true_label=sample_y)
-                is_verified = res.get('verified', False)
-            elif hasattr(verifier, 'verify_sequence'):
-                res_dict = verifier.verify_sequence(sample_x, dummy_y[i:i+1], shared_frames, eps)
-                is_verified = (res_dict.get(eps, 0.0) == 1.0)
-            else:
-                is_verified = False
+    with tqdm(
+        total=min(args.num_samples, len(dataset)),
+        desc=f"Udacity {args.verifier}",
+        unit="sample",
+    ) as progress:
+        for batch_idx, (data, target) in enumerate(loader):
+            if verified_count >= args.num_samples:
+                break
+            data, target = data.to(device), target.to(device)
+            n_samples = min(data.size(0), args.num_samples - verified_count)
             
-            elapsed = time.perf_counter() - start_t
-            results[eps].append(is_verified)
-            total_time += elapsed
+            for i in range(n_samples):
+                sample_x = data[i:i+1]
+                sample_y = target[i]
+                
+                for eps in epsilons:
+                    start_t = time.perf_counter()
+                    if hasattr(verifier, 'verify'):
+                        res = verifier.verify(sample_x, eps, shared_frames, true_label=sample_y)
+                        is_verified = res.get('verified', False)
+                    elif hasattr(verifier, 'verify_sequence'):
+                        res_dict = verifier.verify_sequence(sample_x, torch.tensor([sample_y], device=device), shared_frames, eps)
+                        is_verified = (res_dict.get(eps, 0.0) == 1.0)
+                    else:
+                        is_verified = False
+                    
+                    elapsed = time.perf_counter() - start_t
+                    results[eps].append(is_verified)
+                    total_time += elapsed
+                progress.update(1)
+            verified_count += n_samples
     
     print("\nUdacity Steering Angle Verification Results:")
     for eps in epsilons:
