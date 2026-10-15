@@ -82,7 +82,7 @@ PYTHONPATH=spatio_temporal_verification python spatio_temporal_verification/main
 
 - `--experiment`: Experiment domain to run (`mnist`, `ucf101`, `udacity`, `medmnist`, or `all`). Default: `mnist`.
 - `--mode`: Execution mode (`verify` or `train`). Default: `verify`.
-- `--verifier`: Robustness verification method (`closed_form_ibp`, `closed_form_lips`, `closed_form_lj`, `ibp`, `milp`, `milp_patch`, `relaxed_ibp`, `relaxed_lips`,). Default: `closed_form_ibp`.
+- `--verifier`: Robustness verification method (`closed_form_ibp`, `closed_form_lips`, `closed_form_lj`, `ibp`, `milp`, `milp_patch`, `relaxed_ibp`, `relaxed_lips`, `relaxed_lj`). Default: `closed_form_ibp`.
 - `--eps`: Perturbation magnitude(s) (e.g. `--eps 0.001 0.005`). Default: `0.001`.
 - `--num_samples`: Number of test samples to verify. Default: `20`.
 - `--batch_size`: Batch size for dataloaders. Default: `8`.
@@ -120,8 +120,11 @@ PYTHONPATH=spatio_temporal_verification python spatio_temporal_verification/main
 1. **Closed-Form IBP (`ClosedFormIBPVerifier`)**: Derives exact analytical bounds for structured $L_\infty$ perturbations on the first Conv3D layer, followed by Interval Bound Propagation (IBP) through subsequent layers.
 2. **Closed-Form Lipschitz (`ClosedFormLipschitzVerifier`)**: Combines analytical first-layer bounds with $L_\infty \to L_2$ norm conversion and spectral-norm Lipschitz propagation.
 3. **Closed-Form Löwner-John (`ClosedFormLownerJohnVerifier`)**: Combines analytical first-layer bounds with Löwner-John ellipsoid propagation (sampling, analytical, or inscribed ellipsoids).
-4. **Standard IBP (`IBPVerifier`)**: Standard coordinate-wise interval bound propagation.
-5. **MILP-IBP Hybrid (`MILPIBPVerifier`)**: Exact Mixed-Integer Linear Programming for the first layer, followed by IBP.
+4. **Relaxed IBP** (`RelaxedIBPVerifier`): Relaxes Closed-Form IBP by allowing perturbations to have a shared scalar component of magnitude at most (1 - lambda) * epsilon and independent deviations of magnitude at most lambda * epsilon.
+5. **Relaxed Lipschitz** (`RelaxedLipshitzVerifier`): Relaxes Closed-Form Lipschitz by allowing perturbations to have a shared scalar component of magnitude at most (1 - lambda) * epsilon and independent deviations of magnitude at most lambda * epsilon.
+6. **Relaxed Löwner-John** (`RelaxedLownerJohnVerifier`): Relaxes Closed-Form Löwner-John by allowing perturbations to have a shared scalar component of magnitude at most (1 - lambda) * epsilon and independent deviations of magnitude at most lambda * epsilon.
+7. **Standard IBP (`IBPVerifier`)**: Standard coordinate-wise interval bound propagation.
+8. **MILP-IBP Hybrid (`MILPIBPVerifier`)**: Exact Mixed-Integer Linear Programming for the first layer, followed by IBP.
 
 ## Running Tests
 
