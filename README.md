@@ -84,6 +84,7 @@ PYTHONPATH=spatio_temporal_verification python spatio_temporal_verification/main
 - `--mode`: Execution mode (`verify` or `train`). Default: `verify`.
 - `--verifier`: Robustness verification method (`closed_form_ibp`, `closed_form_lips`, `closed_form_lj`, `ibp`, `milp`, `milp_patch`, `relaxed_ibp`, `relaxed_lips`, `relaxed_lj`). Default: `closed_form_ibp`.
 - `--eps`: Perturbation magnitude(s) (e.g. `--eps 0.001 0.005`). Default: `0.001`.
+- `--float`: When using one of the relaxed verifiers give one or more lambda values (e.g. --lambda 0.5 1). Default: 0.0
 - `--num_samples`: Number of test samples to verify. Default: `20`.
 - `--batch_size`: Batch size for dataloaders. Default: `8`.
 - `--dataset_path`: Custom dataset path (optional).
