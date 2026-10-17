@@ -1,0 +1,120 @@
+Using device: cuda
+
+Relaxation lambda: 0.0
+
+==================================================
+      MedMNIST 3D Synapse 3DCNN Experiment       
+==================================================
+Loading checkpoint from /kaggle/input/datasets/tymoncichocki/medmnist/spatio_temporal_verification/experiments/medmnist/checkpoints/best_medmnist_32_model.pth
+
+Running verifier 'relaxed_ibp' on 352 samples with epsilons=[0.0075, 0.007, 0.006, 0.005]...
+MedMNIST relaxed_ibp: 100%|███████████████| 352/352 [03:05<00:00,  1.90sample/s]
+
+MedMNIST 3D Verification Results:
+  ε=0.00750: Verified Robustness = 0.00% (0/352)
+  ε=0.00700: Verified Robustness = 0.00% (0/352)
+  ε=0.00600: Verified Robustness = 0.28% (1/352)
+  ε=0.00500: Verified Robustness = 28.98% (102/352)
+Total verification time: 184.556s
+
+Relaxation lambda: 0.05
+
+==================================================
+      MedMNIST 3D Synapse 3DCNN Experiment       
+==================================================
+Loading checkpoint from /kaggle/input/datasets/tymoncichocki/medmnist/spatio_temporal_verification/experiments/medmnist/checkpoints/best_medmnist_32_model.pth
+
+Running verifier 'relaxed_ibp' on 352 samples with epsilons=[0.0075, 0.007, 0.006, 0.005]...
+MedMNIST relaxed_ibp: 100%|███████████████| 352/352 [03:11<00:00,  1.84sample/s]
+
+MedMNIST 3D Verification Results:
+  ε=0.00750: Verified Robustness = 0.00% (0/352)
+  ε=0.00700: Verified Robustness = 0.00% (0/352)
+  ε=0.00600: Verified Robustness = 0.00% (0/352)
+  ε=0.00500: Verified Robustness = 17.61% (62/352)
+Total verification time: 190.183s
+
+Relaxation lambda: 0.1
+
+==================================================
+      MedMNIST 3D Synapse 3DCNN Experiment       
+==================================================
+Loading checkpoint from /kaggle/input/datasets/tymoncichocki/medmnist/spatio_temporal_verification/experiments/medmnist/checkpoints/best_medmnist_32_model.pth
+
+Running verifier 'relaxed_ibp' on 352 samples with epsilons=[0.0075, 0.007, 0.006, 0.005]...
+MedMNIST relaxed_ibp: 100%|███████████████| 352/352 [03:11<00:00,  1.84sample/s]
+
+MedMNIST 3D Verification Results:
+  ε=0.00750: Verified Robustness = 0.00% (0/352)
+  ε=0.00700: Verified Robustness = 0.00% (0/352)
+  ε=0.00600: Verified Robustness = 0.00% (0/352)
+  ε=0.00500: Verified Robustness = 12.22% (43/352)
+Total verification time: 190.820s
+
+Relaxation lambda: 0.25
+
+==================================================
+      MedMNIST 3D Synapse 3DCNN Experiment       
+==================================================
+Loading checkpoint from /kaggle/input/datasets/tymoncichocki/medmnist/spatio_temporal_verification/experiments/medmnist/checkpoints/best_medmnist_32_model.pth
+
+Running verifier 'relaxed_ibp' on 352 samples with epsilons=[0.0075, 0.007, 0.006, 0.005]...
+MedMNIST relaxed_ibp: 100%|███████████████| 352/352 [03:11<00:00,  1.84sample/s]
+
+MedMNIST 3D Verification Results:
+  ε=0.00750: Verified Robustness = 0.00% (0/352)
+  ε=0.00700: Verified Robustness = 0.00% (0/352)
+  ε=0.00600: Verified Robustness = 0.00% (0/352)
+  ε=0.00500: Verified Robustness = 0.85% (3/352)
+Total verification time: 191.029s
+
+Relaxation lambda: 0.5
+
+==================================================
+      MedMNIST 3D Synapse 3DCNN Experiment       
+==================================================
+Loading checkpoint from /kaggle/input/datasets/tymoncichocki/medmnist/spatio_temporal_verification/experiments/medmnist/checkpoints/best_medmnist_32_model.pth
+
+Running verifier 'relaxed_ibp' on 352 samples with epsilons=[0.0075, 0.007, 0.006, 0.005]...
+MedMNIST relaxed_ibp: 100%|███████████████| 352/352 [03:11<00:00,  1.84sample/s]
+
+MedMNIST 3D Verification Results:
+  ε=0.00750: Verified Robustness = 0.00% (0/352)
+  ε=0.00700: Verified Robustness = 0.00% (0/352)
+  ε=0.00600: Verified Robustness = 0.00% (0/352)
+  ε=0.00500: Verified Robustness = 0.00% (0/352)
+Total verification time: 190.397s
+
+Relaxation lambda: 0.75
+
+==================================================
+      MedMNIST 3D Synapse 3DCNN Experiment       
+==================================================
+Loading checkpoint from /kaggle/input/datasets/tymoncichocki/medmnist/spatio_temporal_verification/experiments/medmnist/checkpoints/best_medmnist_32_model.pth
+
+Running verifier 'relaxed_ibp' on 352 samples with epsilons=[0.0075, 0.007, 0.006, 0.005]...
+MedMNIST relaxed_ibp: 100%|███████████████| 352/352 [03:11<00:00,  1.84sample/s]
+
+MedMNIST 3D Verification Results:
+  ε=0.00750: Verified Robustness = 0.00% (0/352)
+  ε=0.00700: Verified Robustness = 0.00% (0/352)
+  ε=0.00600: Verified Robustness = 0.00% (0/352)
+  ε=0.00500: Verified Robustness = 0.00% (0/352)
+Total verification time: 190.350s
+
+Relaxation lambda: 1.0
+
+==================================================
+      MedMNIST 3D Synapse 3DCNN Experiment       
+==================================================
+Loading checkpoint from /kaggle/input/datasets/tymoncichocki/medmnist/spatio_temporal_verification/experiments/medmnist/checkpoints/best_medmnist_32_model.pth
+
+Running verifier 'relaxed_ibp' on 352 samples with epsilons=[0.0075, 0.007, 0.006, 0.005]...
+MedMNIST relaxed_ibp: 100%|███████████████| 352/352 [03:11<00:00,  1.84sample/s]
+
+MedMNIST 3D Verification Results:
+  ε=0.00750: Verified Robustness = 0.00% (0/352)
+  ε=0.00700: Verified Robustness = 0.00% (0/352)
+  ε=0.00600: Verified Robustness = 0.00% (0/352)
+  ε=0.00500: Verified Robustness = 0.00% (0/352)
+Total verification time: 190.309s

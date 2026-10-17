@@ -1,0 +1,15 @@
+==================================================
+      MedMNIST 3D Synapse 3DCNN Experiment       
+==================================================
+Loading checkpoint from /kaggle/input/datasets/tymoncichocki/medmnist/spatio_temporal_verification/experiments/medmnist/checkpoints/best_medmnist_32_model.pth
+
+Running verifier 'closed_form_ibp' on 352 samples with epsilons=[0.1, 0.01, 0.001, 0.0001, 1e-05]...
+MedMNIST closed_form_ibp: 100%|███████████| 352/352 [03:58<00:00,  1.48sample/s]
+
+MedMNIST 3D Verification Results:
+  ε=0.10000: Verified Robustness = 0.00% (0/352)
+  ε=0.01000: Verified Robustness = 0.00% (0/352)
+  ε=0.00100: Verified Robustness = 73.01% (257/352)
+  ε=0.00010: Verified Robustness = 73.01% (257/352)
+  ε=0.00001: Verified Robustness = 73.01% (257/352)
+Total verification time: 237.204s
